@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YOLO App</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* 居中样式 */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 600px;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1, h2 {
+            color: #333;
+        }
+
+        .flash-messages {
+            list-style-type: none;
+            padding: 0;
+            margin-bottom: 20px;
+        }
+
+        .flash-messages li {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .info {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+
+        nav a {
+            margin: 0 10px;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
+        }
+
+        img {
+            margin-top: 20px;
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        #controls {
+            margin-top: 20px;
+        }
+
+        #controls button, #controls select {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #controls button:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        #controls select {
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>欢迎, {% if current_user.is_authenticated %}{{ current_user.username }}{% else %}游客{% endif %}</h1>
+
+        {% if not current_user.is_authenticated %}
+            <p><a href="{{ url_for('login') }}">登录</a> | <a href="{{ url_for('register') }}">注册</a></p>
+        {% else %}
+            <nav>
+                <a href="{{ url_for('video_feed') }}">视频流</a> | 
+                <a href="{{ url_for('logout') }}">退出登录</a>
+            </nav>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <ul class="flash-messages">
+                        {% for category, message in messages %}
+                            <li class="{{ category }}">{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endwith %}
+
+            <h2>视频流显示区域</h2>
+            <img src="{{ url_for('video_feed') }}" alt="视频流" id="video-stream" />
+
+            <div id="tracking-status">
+                <p>状态: <span id="status-text">等待检测...</span></p>
+            </div>
+
+            <div id="controls">
+                <label for="object-select">选择目标编号:</label>
+                <select id="object-select"></select>
+                <button id="confirm-selection">确定</button>
+                <button id="toggle-camera">暂停</button>
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        const statusText = document.getElementById('status-text');
+    
+        // 控制摄像头启停
+        document.getElementById('toggle-camera').addEventListener('click', function () {
+            fetch('/toggle_tracking', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    const button = document.getElementById('toggle-camera');
+                    if (data.status === 'off') {
+                        button.textContent = '继续';
+                        statusText.textContent = '已暂停';
+                    } else {
+                        button.textContent = '暂停';
+                        statusText.textContent = '正在检测';
+                    }
+                });
+        });
+    
+        // 动态更新目标编号和物品名称列表
+        function updateObjectList(objects) {
+            const select = document.getElementById('object-select');
+            select.innerHTML = ''; // 清空列表
+            objects.forEach(obj => {
+                const option = document.createElement('option');
+                option.value = obj.id;
+                option.textContent = `ID: ${obj.id}, ${obj.name}`;  // 显示编号和物品名称
+                select.appendChild(option);
+            });
+        }
+    
+        // 定时刷新目标列表
+        setInterval(function () {
+            fetch('/get_detected_objects')
+                .then(response => response.json())
+                .then(data => updateObjectList(data.objects));
+        }, 1000);
+    
+        // 确定目标选择
+        document.getElementById('confirm-selection').addEventListener('click', function () {
+            const selectedId = document.getElementById('object-select').value;
+            fetch('/select_object', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ object_id: selectedId })
+            }).then(response => response.json())
+              .then(data => {
+                  console.log(data.message);
+                  statusText.textContent = `跟踪目标: ID ${selectedId}`;
+              });
+        });
+    </script>
+    
+</body>
+</html>

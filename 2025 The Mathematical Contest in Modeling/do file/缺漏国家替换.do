@@ -1,0 +1,8 @@
+replace Country ="Lebanon" if noc=="LIB"
+replace Country="Russia" if noc == "ROC"
+replace Country="United Arab Republic" if noc == "UAR"
+replace Country="United Arab Republic South Vietnam" if noc == "VNM"
+replace Country="West Indies Federation " if noc == "WIF"
+replace Country="North Yemen" if noc == "YAR"
+replace Country="West Indies Federation" if noc == "WIF"
+replace Country="South Yemen" if noc == "YMD"
