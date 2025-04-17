@@ -30,12 +30,10 @@ login_manager.login_view = 'login'
 # 加载 YOLO 模型
 model = YOLO("yolov10s.pt")
 
-# 全局变量
-detected_objects = []  # 保存检测到的物体编号及其边界框
-selected_object_id = None  # 用户选择的目标编号
-tracking_enabled = True  # 控制摄像头启停状态
+detected_objects = []
+selected_object_id = None  
+tracking_enabled = True 
 
-# 初始化OpenCV的目标跟踪器（使用MOSSE跟踪器为例）
 tracker = cv2.legacy.TrackerMOSSE_create()
 
 # 用户类
@@ -100,17 +98,17 @@ def logout():
     flash("已退出登录", "info")
     return redirect(url_for('login'))
 
-# 全局变量，用于控制视频流状态
+# 控制视频流状态
 tracking_enabled = True
 
 @app.route('/toggle_tracking', methods=['POST'])
 @login_required
 def toggle_tracking():
     global tracking_enabled
-    tracking_enabled = not tracking_enabled  # 切换启停状态
+    tracking_enabled = not tracking_enabled 
     return {'status': 'on' if tracking_enabled else 'off'}
 
-selected_bbox = None  # 用户选择的目标框 (x1, y1, x2, y2)
+selected_bbox = None 
 
 @app.route('/select_object', methods=['POST'])
 @login_required
@@ -124,12 +122,10 @@ def select_object():
 @app.route('/get_detected_objects', methods=['GET'])
 @login_required
 def get_detected_objects():
-    """返回检测到的目标列表"""
     global detected_objects
     return {'objects': detected_objects}
 
 def generate_video_stream():
-    """生成视频流并支持目标检测与跟踪"""
     global detected_objects, selected_object_id, tracking_enabled
     cap = cv2.VideoCapture(0)
     tracker = None
@@ -150,16 +146,10 @@ def generate_video_stream():
         results = model(frame)
         detected_objects = []
         for i, box in enumerate(results[0].boxes):
-            # 获取边界框坐标
             x1, y1, x2, y2 = map(int, box.xyxy[0].cpu().numpy())
-            # 获取类别 ID 和类别名称
             class_id = int(box.cls[0].cpu().numpy())
-            class_name = model.names[class_id]  # 获取类别名称
-
-            # 保存检测结果
+            class_name = model.names[class_id] 
             detected_objects.append({'id': i, 'bbox': (x1, y1, x2, y2), 'name': class_name})
-
-            # 在视频帧上绘制边界框和标签
             cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
             label = f"ID: {i}, {class_name}"
             cv2.putText(frame, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)

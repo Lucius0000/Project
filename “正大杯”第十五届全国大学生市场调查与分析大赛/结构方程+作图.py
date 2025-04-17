@@ -29,40 +29,30 @@ Accept ~ Exper + Impor + NotReason
 WTP ~ Accept
 Market ~ Freq + Exper + WTP + Accept + User
 """
-
-# 创建SEM模型
 model = Model(model_desc)
 
-# 将数据加载到模型中
 model.fit(df)
-
-# 输出模型估计结果
 params = model.inspect()
 print("模型参数估计结果：")
 print(params)
 params.to_excel(r"C:\Users\Lucius\Desktop\11SEM模型参数.xlsx", index=False)
 
-# 计算拟合度
 fit = calc_stats(model)  
 print("\n拟合度指标：")
 print(fit.T)
 fit.to_excel(r"C:\Users\Lucius\Desktop\11SEM拟合度.xlsx", index=False)
 
-# 创建一个空的有向图（Digraph）
 dot = Digraph(comment='SEM Path Diagram')
 
-# 定义颜色
 node_color = '#f8d8a4'  # 浅色
 edge_color = '#ebb089'  # 中性色
 highlight_color = '#588797'  # 深色
 
-# 调整节点和边的间距
-dot.attr(dpi='300')  # 设置图像分辨率
-dot.attr('graph', ranksep='1.2', nodesep='0.8')  # 增加节点之间的距离和节点与边之间的间距
+dot.attr(dpi='300') 
+dot.attr('graph', ranksep='1.2', nodesep='0.8')
 
-# 设置字体大小和字体样式
-dot.attr('node', fontname='Helvetica', fontsize='12')  # 设置字体和字号
-dot.attr('edge', fontname='Helvetica', fontsize='10')  # 设置边的字体和字号
+dot.attr('node', fontname='Helvetica', fontsize='12')
+dot.attr('edge', fontname='Helvetica', fontsize='10') 
 
 # 绘制路径图
 dot.node('user', 'user', style='filled', fillcolor=node_color, fontcolor='black')
@@ -99,5 +89,4 @@ dot.edge('Accept', 'Impor', label='', color=highlight_color)
 dot.edge('Accept', 'NotReason', label='', color=highlight_color)
 dot.edge('WTP', 'Accept', label='', color=highlight_color)
 
-# 保存并展示路径图
 dot.render(r'C:\Users\Lucius\Desktop\SEM_Paths_with_color_and_spacing', format='png', view=True)

@@ -14,22 +14,17 @@ import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 import random
 
-# 读取数据
 df = pd.read_excel(r"C:\Users\Lucius\Desktop\NLP\小红书_bert.xlsx")
 
-# 处理函数：转换点赞、收藏、评论数
 def convert_to_number(value):
     if isinstance(value, str):
         if '万' in value:
             return float(value.replace('万', '')) * 10000  # 转换 "2.1万" -> 21000
         elif value in ['点赞', '收藏', '评论']:
-            return 0  # 替换这些文本为 0
+            return 0 
     try:
-        return float(value)  # 直接转换数值字符串
-    except ValueError:
-        return None  # 无法转换返回 None
-
-# 应用转换
+        return float(value)  
+        return None  
 df[['点赞数', '收藏数', '评论数']] = df[['点赞数', '收藏数', '评论数']].applymap(convert_to_number)
 df = df.fillna(0).astype({'点赞数': 'int', '收藏数': 'int', '评论数': 'int'})
 
@@ -49,7 +44,7 @@ df_grouped = df.groupby(group_keys).apply(agg_comments).reset_index()
 def weight_func(count):
     return math.log(1 + count)
 
-scale = 10  # 设定复制倍率
+scale = 10 
 
 # 3. 构造加权文档
 def construct_weighted_doc(row):
@@ -88,7 +83,6 @@ lda_model = models.LdaModel(corpus, num_topics=5, id2word=dictionary, passes=10)
 topics = lda_model.show_topics(num_topics=5, num_words=10, formatted=False)
 topic_keywords = {topic_id: [word for word, prob in words] for topic_id, words in topics}
 
-# 5.1 为每篇帖子确定主导主题
 def get_dominant_topic(doc_bow):
     topic_probs = lda_model.get_document_topics(doc_bow)
     if topic_probs:
@@ -110,11 +104,9 @@ topic_sentiments = df_grouped.groupby('主题').apply(
     lambda g: np.average(g['帖子情感评分'], weights=g['总权重'])
 ).reset_index(name='主题情感评分')
 
-# 7. 构造导出结果表格：增加关键词、情感分类、主题含义、代表文本
+# 7. 构造导出结果表格
 result_table = topic_sentiments.copy()
 result_table['关键词'] = result_table['主题'].apply(lambda t: ", ".join(topic_keywords.get(t, [])))
-
-# 情感分类：大于0.7为正面，小于0.4为负面，其余为中性
 def classify_sentiment(score):
     if score > 0.7:
         return "正面"
@@ -124,7 +116,6 @@ def classify_sentiment(score):
         return "中性"
 result_table['情感分类'] = result_table['主题情感评分'].apply(classify_sentiment)
 
-# 主题含义：简单描述（可根据实际情况进一步修改）
 def summarize_topic(t):
     kws = topic_keywords.get(t, [])
     if kws:
@@ -133,7 +124,6 @@ def summarize_topic(t):
         return "暂无信息"
 result_table['主题含义'] = result_table['主题'].apply(summarize_topic)
 
-# 代表文本：选取该主题下总权重最大的2条原始文本（标题+正文）
 def get_representative_text(topic_id, top_n=2):
     sub_df = df_grouped[df_grouped['主题'] == topic_id]
     # 按总权重降序排序
@@ -144,16 +134,13 @@ def get_representative_text(topic_id, top_n=2):
 
 result_table['代表文本'] = result_table['主题'].apply(lambda t: get_representative_text(t, top_n=2))
 
-# 修改列名方便查看
 result_table.rename(columns={'主题': '主题编号'}, inplace=True)
-
-# 导出到 Excel
 output_path = r"C:\Users\Lucius\Desktop\NLP\主题建模结果.xlsx"
 result_table.to_excel(output_path, index=False)
 print("导出结果表格路径：", output_path)
 print(result_table)
 
-# 8. 可视化：条形图展示各主题下的帖子数量（加权后总权重）
+# 8. 可视化
 topic_weight_sum = df_grouped.groupby('主题')['总权重'].sum().reset_index()
 topic_weight_sum['主题'] = topic_weight_sum['主题'].astype(str)
 
@@ -168,7 +155,7 @@ plt.ylabel('帖子数量（加权）')
 plt.title('小红书各主题下的帖子数量（加权）')
 plt.show()
 
-# 9. 词云图：依据预设颜色随机变化
+# 9. 词云图
 all_words = {}
 for idx, row in result_table.iterrows():
     t = row['主题编号']
@@ -188,16 +175,11 @@ plt.axis('off')
 plt.title("小红书主题关键词词云图")
 plt.show()
 
-# 计算每个主题下所有帖子的总权重（作为帖子的加权数量）
 topic_weight_sum = df_grouped.groupby('主题')['总权重'].sum().reset_index()
-# 如果需要与结果表格中的主题编号保持一致，可将主题编号转换为字符串
 topic_weight_sum['主题'] = topic_weight_sum['主题'].astype(str)
 
-# 8. 可视化：条形图展示各主题情感得分
 plt.figure(figsize=(8, 4))
-# 使用预设的颜色列表（颜色不再根据情感值区分）
 color_list = ['#f8d8a4', '#ebb089', '#588797', '#a8c3d9', '#f2b880', '#d8e3f1']
-# 按顺序分配颜色
 colors = [color_list[i % len(color_list)] for i in range(len(result_table))]
 plt.rcParams['font.sans-serif'] = ['SimHei']
 plt.rcParams['axes.unicode_minus'] = False

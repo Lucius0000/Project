@@ -26,26 +26,17 @@ df_3 = pd.read_excel(attach_2, sheet_name=sheet_3)
 df_4 = pd.read_excel(attach_2, sheet_name=sheet_4)
 df_4=df_4.drop(index=107).drop(index=108).drop(index=109)
 
-
-# 统一列名，去除列名中的空格
 df_1.columns = df_1.columns.str.strip()
 df_2.columns = df_2.columns.str.strip()
 df_3.columns = df_3.columns.str.strip()
 df_4.columns = df_4.columns.str.strip()
 
-# 去除数据中的空格
 df_1 = df_1.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 df_2 = df_2.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 df_3 = df_3.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 df_4 = df_4.applymap(lambda x: x.strip() if isinstance(x, str) else x)
 
 
-
-
-
-
-
-#求预期销售量
 # 定义地块类型映射字典
 mapping = {
     'A': '平旱地',
@@ -56,18 +47,14 @@ mapping = {
     'F': '智慧大棚'
 }
 
-# 填充缺失的“种植地块”信息
 df_3['种植地块'] = df_3['种植地块'].fillna(method='ffill')
 
-# 扩展数据的函数
 def expand_row(row):
-    # 拆解作物信息
     crop_ids = str(row['作物编号']).split(',')
     crop_names = str(row['作物名称']).split(',')
     crop_types = str(row['作物类型']).split(',')
     areas = str(row['种植面积/亩']).split(',')
     
-    # 确保长度一致
     length = max(len(crop_ids), len(crop_names), len(crop_types), len(areas))
     crop_ids += [None] * (length - len(crop_ids))
     crop_names += [None] * (length - len(crop_names))
@@ -86,45 +73,28 @@ def expand_row(row):
         for crop_id, crop_name, crop_type, area in zip(crop_ids, crop_names, crop_types, areas)
     ]
 
-# 扩展所有行
 expanded_data = [item for sublist in df_3.apply(expand_row, axis=1) for item in sublist]
 
-# 将扩展后的数据转换为 DataFrame
 df_com = pd.DataFrame(expanded_data)
 
-# 添加地块类型列
 df_com['地块类型'] = df_com['种植地块'].str.extract(r'([A-Z])')[0].map(mapping)
-
-# 保存调整后的数据
 path ='附件二去除合并单元格.xlsx'
 df_com.to_excel(path, index=False)
-
-# 处理 df_4 中的空格
 df_4['地块类型'] = df_4['地块类型'].str.strip() 
 df_4['种植季次'] = df_4['种植季次'].str.strip() 
-
-# 处理 df_com 中的空格
 df_com['地块类型'] = df_com['地块类型'].str.strip() 
 df_com['种植季次'] = df_com['种植季次'].str.strip()  
-
-# 统一大小写
 df_4['地块类型'] = df_4['地块类型'].str.upper() 
 df_com['地块类型'] = df_com['地块类型'].str.upper() 
 df_4['种植季次'] = df_4['种植季次'].str.upper()  
 df_com['种植季次'] = df_com['种植季次'].str.upper() 
-
-# 确保数据类型一致
 df_com['作物编号'] = df_com['作物编号'].astype(str)
 df_4['作物编号'] = df_4['作物编号'].astype(str)
 
-# 提取用于合并的列
 df_com_filtered = df_com[['作物编号', '种植季次', '地块类型', '种植面积/亩']]
 df_4_filtered = df_4[['作物编号', '种植季次', '地块类型', '亩产量/斤']]
 
 df_merged = pd.merge(df_com_filtered, df_4_filtered, on=['作物编号', '种植季次', '地块类型'], how='left')
-
-
-#智慧大棚第一季缺失
 df_merged.at[77,'亩产量/斤'] =4000
 df_merged.at[78,'亩产量/斤'] =4500
 df_merged.at[81,'亩产量/斤'] =3600
@@ -157,37 +127,23 @@ df_3['作物编号'] = df_3['作物编号'].astype(int)
 df_4['作物编号'] = df_4['作物编号'].astype(int)
 
 
-
-
-
-
-#计算单亩产出
 df_c = df_4[['销售单价/(元/斤)', '亩产量/斤', '作物编号', '地块类型','种植季次']]
-# 确保销售单价是字符串类型
 df_c['销售单价/(元/斤)'] = df_c['销售单价/(元/斤)'].astype(str)
 
-# 函数：从区间计算中点
 def calculate_midpoint(price_range):
     if isinstance(price_range, str):
         try:
             low, high = map(float, price_range.split('-'))
             return (low + high) / 2
         except ValueError:
-            # 如果分割失败或格式不正确，返回NaN
             return np.nan
     else:
-        # 如果不是字符串类型，返回NaN
         return np.nan
-
-# 计算每一行的单亩产出均值
 df_c['中点销售单价'] = df_c['销售单价/(元/斤)'].apply(calculate_midpoint)
 df_c['单亩产出均值'] = df_c['中点销售单价'] * df_c['亩产量/斤'] 
 
-# 合并地块类型和种植季次列为一个新的列
 df_c['地块类型_种植季次'] = df_c['地块类型'] + df_c['种植季次']
 
-
-# 创建dataframe：行索引为“作物编号”，列索引为“地块类型”，值为“单亩产出均值”
 pivot_table = df_c.pivot_table(
     index=['地块类型_种植季次'],
     columns='作物编号',
@@ -207,15 +163,9 @@ pivot_table.to_excel(output_path)
 
 
 
-
-
-
-
-# 创建可以矩阵相乘的单亩产出矩阵
 column1 = list(range(1, 42))
 B = pd.DataFrame(columns=column1)
 
-# 定义函数以重复数据并将其添加到 DataFrame 中
 def add_repeated_rows(data_copy, repeat_count):
     data_repeated = pd.DataFrame([data_copy] * repeat_count)
     return pd.concat([B, data_repeated], ignore_index=True)
@@ -260,16 +210,11 @@ B.to_excel(output_path, index=True)
 
 
 
-
-
-# 创建符号变量矩阵
 rows, cols = 41, 90
 variables = [sp.Symbol(f'x{i+1}') for i in range(rows * cols)]
 A = pd.DataFrame([variables[i*cols:(i+1)*cols] for i in range(rows)])
 
-# 先将整个 DataFrame 赋值为0
 A[:] = 0
-# 确保区域数据的形状一致
 def set_data(start_row, end_row, start_col, end_col):
     data = [[variables[i*cols + j] for j in range(start_col, end_col)] for i in range(start_row, end_row)]
     if np.array(data).shape == A.loc[start_row:end_row-1, start_col:end_col-1].shape:
@@ -277,17 +222,16 @@ def set_data(start_row, end_row, start_col, end_col):
     else:
         print(f"Shape mismatch for region ({start_row}:{end_row}, {start_col}:{end_col}):", np.array(data).shape, A.loc[start_row:end_row-1, start_col:end_col-1].shape)
 
-# 设置不同区域的数据
-set_data(0, 15, 0, 26)       # 0-14行交0-25列
-set_data(15, 16, 26, 34)     # 15行交26-33列
-set_data(16, 34, 34, 42)     # 16-33行交34-41列
-set_data(34, 37, 42, 50)     # 34-36行交42-49列
-set_data(16, 34, 50, 66)     # 16-33行交50-64列
-set_data(37, 41, 66, 82)     # 37-40行交66-80列
-set_data(16, 34, 82, 86)     # 16-33行交82-84列
-set_data(16, 34, 86, 90)     # 16-33行交86-88列
+# 行列相交
+set_data(0, 15, 0, 26)      
+set_data(15, 16, 26, 34)   
+set_data(16, 34, 34, 42)    
+set_data(34, 37, 42, 50)    
+set_data(16, 34, 50, 66)    
+set_data(37, 41, 66, 82)  
+set_data(16, 34, 82, 86)    
+set_data(16, 34, 86, 90)  
 
-# 输出到 Excel 文件
 output_path = 'A.xlsx'
 A.to_excel(output_path, index=True)
 #print(A)
