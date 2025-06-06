@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智伴云 - AI情感陪伴第一站</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Source Han Sans CN', 'Microsoft YaHei', sans-serif;
+      background-color: #fbe4c2;
+      color: #333;
+      box-sizing: border-box;
+    }
+    * {
+      box-sizing: inherit;
+    }
+    header {
+      background-color: #ffffff;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      flex-wrap: wrap;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .header-left div {
+      font-size: 42px;
+      font-weight: bold;
+      margin-right: 30px;
+    }
+    .header-left nav {
+      background-color: #fef8ee;
+      padding: 8px 20px;
+      border-radius: 50px;
+      display: flex;
+      gap: 30px;
+    }
+    .header-left nav a {
+      color: #333;
+      text-decoration: none;
+      font-size: 24px;
+      font-weight: 500;
+    }
+    .auth-links {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .auth-links a {
+      background-color: #fbefdb;
+      font-weight: bold;
+      font-size: 20px;
+      padding: 8px 16px;
+      border-radius: 20px;
+      color: #000;
+      text-decoration: none;
+      border: 1px solid #ccc;
+    }
+    .welcome {
+      font-size: 20px;
+      color: #333;
+    }
+    section.banner {
+      text-align: center;
+      padding: 30px 20px;
+      width: 700px;
+      margin: 0 auto;
+      background-color: #fbe4c2;
+    }
+    section.banner h1 {
+      font-size: 72px;
+      font-weight: 800;
+      color: #000;
+      margin: 0;
+      white-space: nowrap;
+    }
+    section.banner h1 span {
+      color: #678c9e;
+    }
+    section.banner p {
+      color: #444;
+      font-size: 40px;
+      margin-top: 16px;
+    }
+    .character {
+      height: 140px;
+      position: absolute;
+      top: 100px;
+      right: 40px;
+    }
+    .grid-section {
+      display: flex;
+      justify-content: space-around;
+      padding: 40px 5% 30px;
+      background-color: #ffffff;
+      flex-wrap: wrap;
+      text-align: center;
+    }
+    .grid-section div {
+      width: 30%;
+      min-width: 260px;
+      margin-bottom: 30px;
+    }
+    .grid-section h2 {
+      font-weight: bold;
+      color: #000;
+      margin-bottom: 16px;
+      font-size: 30px;
+    }
+    .grid-section a {
+      display: block;
+      margin: 16px auto;
+      font-size: 36px;
+      font-weight: 600;
+      color: #506f85;
+      text-decoration: none;
+      padding: 4px 0;
+      background: url('brush-stroke.png') no-repeat left bottom;
+      background-size: contain;
+    }
+    footer {
+      background-color: #ffffff;
+      padding: 40px 10% 50px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 40px;
+      position: relative;
+    }
+    footer a {
+      color: #506f85;
+      text-decoration: none;
+      font-size: 36px;
+      font-weight: 600;
+      padding: 4px 0;
+      background: url('brush-stroke.png') no-repeat left bottom;
+      background-size: contain;
+    }
+    .flower {
+      height: 140px;
+      position: absolute;
+      left: 20px;
+      bottom: 20px;
+    }
+    @media (max-width: 1440px) {
+      .header-left div { font-size: 36px; }
+      .header-left nav a { font-size: 20px; }
+      section.banner h1 { font-size: 56px; }
+      section.banner p { font-size: 32px; }
+      .grid-section a, footer a { font-size: 28px; }
+      .character, .flower { height: 100px; }
+    }
+    @media (max-width: 1024px) {
+      .grid-section {
+        flex-direction: column;
+        align-items: center;
+      }
+      .grid-section div {
+        width: 80%;
+      }
+      .character {
+        position: static;
+        margin-top: 20px;
+      }
+      footer {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <div>智伴云</div>
+      <nav>
+        <a href="{{ url_for('index') }}">网页首页</a>
+        <a href="coming-soon.html?from=合作案例">合作案例</a>
+        <a href="coming-soon.html?from=更多产品">更多产品</a>
+        <a href="coming-soon.html?from=项目团队">项目团队</a>
+      </nav>
+    </div>
+    <div class="auth-links">
+      {% if session.username %}
+        <span class="welcome">你好，{{ session.username }}</span>
+        <a href="{{ url_for('logout') }}">登出</a>
+      {% else %}
+        <a href="{{ url_for('login') }}">登录</a>
+        <a href="{{ url_for('register') }}">注册</a>
+      {% endif %}
+    </div>
+  </header>
+
+  <section class="banner">
+    <h1>AI情感陪伴 <span>第一站</span></h1>
+    <p>智联情感生态，温暖触手可及</p>
+  </section>
+  <img src="{{ url_for('static', filename='公仔.png') }}" alt="公仔插图" class="character">
+
+  <section class="grid-section">
+    <div>
+      <h2>手册订阅</h2>
+      <a href="download.html?file=产品使用手册.pdf&name=产品使用手册" target="_blank">产品使用手册</a>
+      <a href="download.html?file=产品开发指南.pdf&name=产品开发指南" target="_blank">产品开发指南</a>
+    </div>
+    <div>
+      <h2>产品服务</h2>
+      <a href="questionnaire.html" target="_blank">产品匹配工具</a>
+      <a href="{{ url_for('custom_report') }}">定制化产品报告</a>
+    </div>
+    <div>
+      <h2>平台跳转</h2>
+      <a href="https://b23.tv/tTfFvWP" target="_blank">智伴云小云朵B站账号</a>
+      <a href="coming-soon.html?from=智伴云官方公众号">智伴云官方公众号</a>
+    </div>
+  </section>
+
+  <footer>
+    <img src="{{ url_for('static', filename='花朵.png') }}" alt="花朵插图" class="flower">
+    <a href="{{ url_for('feedback') }}">用户反馈</a>
+    <a href="coming-soon.html?from=企业合作">企业合作</a>
+  </footer>
+</body>
+</html>

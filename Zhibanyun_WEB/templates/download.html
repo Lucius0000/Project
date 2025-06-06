@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>文件正在下载</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Source Han Sans CN', 'Microsoft YaHei', sans-serif;
+      background-color: #fbe4c2;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+    }
+    h1 {
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+    p {
+      font-size: 28px;
+      color: #666;
+    }
+    a {
+      margin-top: 30px;
+      font-size: 24px;
+      color: #678c9e;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h1 id="title">文件正在下载中…</h1>
+  <p>若未自动下载，可点击下方链接手动下载：</p>
+  <a id="manual-link" href="#">点击下载</a>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const rawFile = urlParams.get('file');
+    const file = rawFile ? `/static/${rawFile}` : null;
+    const name = urlParams.get('name') || '文件';
+
+    if (file) {
+      document.getElementById('title').textContent = `${name} 正在下载中…`;
+      document.getElementById('manual-link').href = file;
+
+      // 创建并点击一个隐藏的a标签以触发下载
+      const a = document.createElement('a');
+      a.href = file;
+      a.download = '';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      // 3秒后跳转回主页
+      setTimeout(() => {
+        window.location.href = "{{ url_for('index') }}";
+      }, 3000);
+    } else {
+      document.getElementById('title').textContent = `未指定文件`;
+      document.getElementById('manual-link').style.display = 'none';
+    }
+  </script>
+</body>
+</html>

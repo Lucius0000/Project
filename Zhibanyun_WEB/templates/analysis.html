@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>定制化产品报告 - 智伴云</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Source Han Sans CN', 'Microsoft YaHei', sans-serif;
+      background-color: #fbe4c2;
+      color: #333;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      background-color: #fff;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.1);
+      width: 600px;
+      text-align: center;
+    }
+    h1 {
+      font-size: 48px;
+      color: #678c9e;
+      margin-bottom: 20px;
+    }
+    input[type="file"] {
+      margin: 20px 0;
+      font-size: 18px;
+    }
+    button {
+      background-color: #678c9e;
+      color: #fff;
+      font-size: 18px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #506f85;
+    }
+    #progress {
+      margin-top: 30px;
+      text-align: left;
+      font-family: monospace;
+      font-size: 16px;
+      white-space: pre-wrap;
+      background: #f3f3f3;
+      padding: 20px;
+      border-radius: 10px;
+      height: 200px;
+      overflow-y: auto;
+    }
+    .download-link {
+      display: none;
+      margin-top: 20px;
+      font-size: 18px;
+      color: #678c9e;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>定制化产品报告</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+      <input type="file" name="file" accept=".xlsx,.xls" required />
+      <br>
+      <button type="submit">上传并生成报告</button>
+    </form>
+
+    <div id="progress">请上传您的数据文件，系统将自动生成个性化报告...</div>
+    <a id="downloadLink" class="download-link" href="" download>点击下载处理结果</a>
+  </div>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const progressDiv = document.getElementById('progress');
+    const downloadLink = document.getElementById('downloadLink');
+
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      progressDiv.textContent = '正在处理，请稍候...\n';
+      downloadLink.style.display = 'none';
+
+      const response = await fetch('/upload_report', {
+        method: 'POST',
+        body: formData
+      });
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder('utf-8');
+
+      let text = '';
+
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        text += chunk;
+        progressDiv.textContent = text;
+        progressDiv.scrollTop = progressDiv.scrollHeight;
+
+        // 检测“分析完成”提示
+        if (chunk.includes('分析完成')) {
+          const folderMatch = text.match(/文件夹名:\s*(\S+)/); 
+          if (folderMatch) {
+            const folderName = folderMatch[1];
+            downloadLink.href = `/download_result/${folderName}`;
+            downloadLink.style.display = 'inline-block';
+          } else {
+            downloadLink.href = '/download_result'; // fallback
+            downloadLink.style.display = 'inline-block';
+          }
+        }
+      }
+    };
+
+  </script>
+</body>
+</html>

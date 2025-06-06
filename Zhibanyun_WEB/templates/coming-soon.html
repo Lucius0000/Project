@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>敬请期待 - 智伴云</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Source Han Sans CN', 'Microsoft YaHei', sans-serif;
+      background-color: #fbe4c2;
+      color: #333;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+    .container {
+      background-color: #fff;
+      border-radius: 40px;
+      padding: 60px 80px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      font-size: 72px;
+      color: #678c9e;
+      margin-bottom: 20px;
+    }
+    p {
+      font-size: 36px;
+      color: #666;
+    }
+    .back-link {
+      margin-top: 40px;
+      display: inline-block;
+      font-size: 24px;
+      color: #333;
+      text-decoration: none;
+      border: 2px solid #ccc;
+      border-radius: 12px;
+      padding: 8px 24px;
+      background-color: #fbefdb;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>敬请期待</h1>
+    <p>您访问的页面正在建设中，敬请期待更多精彩内容！</p>
+    <a href="{{ url_for('index') }}" class="back-link">返回首页</a>
+  </div>
+</body>
+</html>
