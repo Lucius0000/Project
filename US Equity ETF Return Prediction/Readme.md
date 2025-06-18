@@ -1,8 +1,4 @@
-您好！本项目是贵公司**预测ETFs/ETNs收益率**的笔试题作答
-
-本人是哈尔滨工业大学（深圳）大数据会计专业的在读学生，大二升大三，求职意向是量化实习生，联系方式是：`942335880@qq.com`,`13794439733`，github：[GitHub](https://github.com/Lucius0000/Project)
-
-恳请贵公司给我一个实习、成长的机会！
+## US Equity ETF Return Prediction
 
 ---
 
