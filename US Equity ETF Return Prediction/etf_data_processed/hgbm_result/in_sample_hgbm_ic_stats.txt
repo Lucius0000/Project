@@ -1,0 +1,5 @@
+in_sample__var_ic_stats
+Mean IC: 0.3065
+Std  IC: 0.2654
+IC IR  : 1.1550
+Positive IC Ratio: 86.32%

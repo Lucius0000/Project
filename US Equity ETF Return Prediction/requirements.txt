@@ -1,0 +1,15 @@
+akshare==1.16.98
+ipython==8.27.0
+ipython==8.12.3
+ipython==8.30.0
+joblib==1.4.2
+matplotlib==3.10.3
+numpy==2.3.0
+pandas==2.3.0
+scikit_learn==1.7.0
+scipy==1.15.3
+statsmodels==0.14.4
+torch==2.5.1+cu121
+torch==2.5.1
+tqdm==4.66.5
+tqdm==4.67.1
